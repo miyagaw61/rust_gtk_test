@@ -147,7 +147,7 @@ fn main(){
     // 例えば次のような実装にしたい。
     // g.add_winCloseEvent("top", |_, _| {
     //     println!("hoge");
-    // }
+    // });
     g.wins["top"].connect_delete_event(|_, _| {
         gtk::main_quit();
         Inhibit(false)
