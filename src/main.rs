@@ -20,7 +20,7 @@ trait GtkUtils: GtkUtilsFn {
     fn make_labelWidget(&mut self, name: &'static str, text: &str);
     fn make_buttonWidget(&mut self, name: &'static str, text: &str);
     fn add_buttonWidget(&mut self, winName: &'static str, boxName: &'static str, buttonName: &'static str, expand: bool, fill: bool, padding: u32);
-    fn add_winCloseEvent(&self, winName: &'static str, event: <Self as GtkUtilsFn>::EventInTrait);
+    fn add_winCloseEvent(&self, winName: &'static str, closure: std::ops::Fn(gtk::Window, gdk::Event));
 }
 
 trait GtkUtilsFn {
