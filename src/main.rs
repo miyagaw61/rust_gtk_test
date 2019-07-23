@@ -145,7 +145,7 @@ fn main(){
     // ここを関数化したい！
     // しかし、クロージャを引数にとるため実装が難しい！
     // 例えば次のような実装にしたい。
-    // g.add_winCloseEvent(|_, _| {
+    // g.add_winCloseEvent("top", |_, _| {
     //     println!("hoge");
     // }
     g.wins["top"].connect_delete_event(|_, _| {
