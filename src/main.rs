@@ -10,7 +10,7 @@ use gtk::prelude::*;
 use gtk::{Button, Label, Window, WindowType};
 use std::collections::HashMap;
 
-trait GtkUtils: GtkUtilsFn {
+trait GtkUtils {
     fn new() -> GtkConf;
     fn init(&self);
     fn define_topWin(&mut self, title: &str, xsize: i32, ysize: i32);
@@ -20,14 +20,14 @@ trait GtkUtils: GtkUtilsFn {
     fn make_labelWidget(&mut self, name: &'static str, text: &str);
     fn make_buttonWidget(&mut self, name: &'static str, text: &str);
     fn add_buttonWidget(&mut self, winName: &'static str, boxName: &'static str, buttonName: &'static str, expand: bool, fill: bool, padding: u32);
-    fn add_winCloseEvent(&self, winName: &'static str, closure: std::ops::Fn(gtk::Window, gdk::Event));
+    fn add_winCloseEvent<F: Fn(&gtk::Window, &gdk::Event) + 'static>(&self, winName: &'static str, f: F);
 }
 
-trait GtkUtilsFn {
-    type WindowInTrait;
-    type EventInTrait;
-    fn closure(&self, window: gtk::Window, event: gdk::Event);
-}
+//trait GtkUtilsFn {
+//    type WindowInTrait;
+//    type EventInTrait;
+//    fn closure(&self, window: gtk::Window, event: gdk::Event);
+//}
 
 struct GtkConf {
     wins: HashMap<&'static str, gtk::Window>,
@@ -37,13 +37,13 @@ struct GtkConf {
     addedBoxes: HashMap<&'static str, bool>,
 }
 
-impl<F> GtkUtilsFn for F where F: std::ops::Fn(gtk::Window, gdk::Event) {
-    type WindowInTrait = gtk::Window;
-    type EventInTrait = gdk::Event;
-    fn closure(&self, window: Self::WindowInTrait, event: Self::EventInTrait) {
-        (self)(window, event);
-    }
-}
+//impl<F> GtkUtilsFn for F where F: std::ops::Fn(gtk::Window, gdk::Event) {
+//    type WindowInTrait = gtk::Window;
+//    type EventInTrait = gdk::Event;
+//    fn closure(&self, window: Self::WindowInTrait, event: Self::EventInTrait) {
+//        (self)(window, event);
+//    }
+//}
 
 impl GtkUtils for GtkConf {
     fn new() -> GtkConf {
@@ -115,9 +115,11 @@ impl GtkUtils for GtkConf {
         let button = gtk::Button::new_with_label(text);
         self.buttons.insert(name, button);
     }
-    fn add_winCloseEvent(&self, winName: &'static str, event: Self::EventInTrait) {
-        //self.wins[winName].connect_delete_event();
-        println!("hoge");
+    fn add_winCloseEvent<F: Fn(&gtk::Window, &gdk::Event) + 'static>(&self, winName: &'static str, f: F) {
+        self.wins[winName].connect_delete_event(move |window, event| {
+            f(window, event);
+            Inhibit(false)
+        });
     }
 }
 
@@ -155,7 +157,7 @@ fn main(){
 
     // buttonをクリックしたときのeventの設定
     let label_c = g.labels["label"].clone();
-    g.buttons["countUp_button"].clone().connect_clicked(move |_| {
+    g.buttons["countUp_button"].connect_clicked(move |_| {
         let old_num: u16 = label_c.get_text().unwrap().to_string().parse::<u16>().unwrap();
         g.labels["label"].set_text(&(old_num + 1).to_string());
         println!("カウント+1");
